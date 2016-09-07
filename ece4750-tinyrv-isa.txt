@@ -644,7 +644,7 @@ left shift.
 
  - Summary   : Jump to address
  - Assembly  : jr rs1
- - Semantics : PC = R[rs1] + sext(imm)
+ - Semantics : PC = R[rs1]
  - Format    : I-Type, I-immediate
 
   31                  20 19     15 14  12 11      7 6           0
