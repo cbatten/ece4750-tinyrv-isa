@@ -33,6 +33,7 @@ why the architecture designers made specific design decisions.
      4.5. Unconditional Jump Instructions
      4.6. Conditional Branch Instructions
   5. Tiny RISC-V Privileged ISA
+  6. Tiny RISC-V Pseudo-Instructions
 
 --------------------------------------------------------------------------
 1. Architectural State
@@ -272,6 +273,13 @@ Unless otherwise specified assume instruction updates PC with PC+4.
  | csr                  | rs1     | 010  | rd      | 1110011     |
  +----------------------+---------+------+---------+-------------+
 
+The control/status register read instruction is used to read a CSR and
+write the result to a GPR. The CSRs supported in TinyRV2 are listed in
+Section 5. Note that in RISC-V CSRR is really a pseudo-instruction for a
+specific usage of CSRRS, but in TinyRV2 we only support the subset of
+CSRRS captured by CSRR. See Section 6 for more details about
+pseudo-instructions.
+
 * CSRW
 
  - Summary   : Move value in GPR to control/status register
@@ -283,6 +291,13 @@ Unless otherwise specified assume instruction updates PC with PC+4.
  +----------------------+---------+------+---------+-------------+
  | csr                  | rs1     | 001  | rd      | 1110011     |
  +----------------------+---------+------+---------+-------------+
+
+The control/status register write instruction is used to read a GPR and
+write the result to a CSR. The CSRs supported in TinyRV2 are listed in
+Section 5. Note that in RISC-V CSRW is really a pseudo-instruction for a
+specific usage of CSRRW, but in TinyRV2 we only support the subset of
+CSRRW captured by CSRW. See Section 6 for more details about
+pseudo-instructions.
 
 --------------------------------------------------------------------------
 4.2. Register-Register Arithmetic Instructions
@@ -625,6 +640,23 @@ left shift.
  | imm                                   | rd      | 1101111     |
  +---------------------------------------+---------+-------------+
 
+* JR
+
+ - Summary   : Jump to address
+ - Assembly  : jr rs1
+ - Semantics : PC = R[rs1] + sext(imm)
+ - Format    : I-Type, I-immediate
+
+  31                  20 19     15 14  12 11      7 6           0
+ +----------------------+---------+------+---------+-------------+
+ | 000000000000         | rs1     | 000  | 00000   | 1100111     |
+ +----------------------+---------+------+---------+-------------+
+
+Note that JR is a "real" instruction in TinyRV1, but it is a
+pseudo-instruction for a specific usage of JALR. We don't really worry
+about zero-ing out the the least-significant bit to zero in TinyRV1, but
+this must be done for TinyRV2.
+
 * JALR
 
  - Summary   : Jump to address and place return address in GPR
@@ -798,4 +830,42 @@ address. As mentioned above, Tiny RISC-V only supports a 1MB virtual
 memory address space from 0x00000000 to 0x000fffff, and thus Tiny RISC-V
 only supports a 1MB physical memory address space. In the RISC-V vol 2
 ISA manual this is called a Mbare addressing environment.
+
+--------------------------------------------------------------------------
+6. Tiny RISC-V Pseudo-Instructions
+--------------------------------------------------------------------------
+
+It is very important to understand the relationship between the "real"
+instructions presented in this manual, the "real" instructions in the
+official RISC-V ISA manual, and pseudo-instructions. There are four
+instructions we need to be careful with: NOP, JR, CSRR, CSRW. The
+following table illustrates which ISAs contain which of these four
+instructions, and whether or not the instruction is considered a "real"
+instruction or a "pseudo-instruction".
+
+        TinyRV1 TinyRV2 RISC-V
+  ----------------------------
+  NOP   pseudo  pseudo  pseudo
+  JR    real    pseudo  pseudo
+  CSRR  --      real    pseudo
+  CSRW  --      real    pseudo
+
+NOP is always a pseudo-instruction. It is always equivalent to the
+following use of the ADDI instruction:
+
+  nop == addi x0, x0, 0
+
+JR is a "real" instruction in TinyRV1, but it is a pseudo-instruction in
+TinyRV2 and RISC-V for the following use of the JALR instruction:
+
+  jr rs1 == jalr x0, rs1, 0
+
+CSRR and CSSRW are real instructions in TinyRV2 but they are
+pseudo-instructions for the following use of the CSRRS and CSRRW:
+
+  csrr rd, csr  == csrrs rd, csr, x0
+  csrw csr, rs1 == csrrw x0, csr, rs1
+
+None of this changes the encodings. In TinyRV1, JR is encoded the same
+way as the corresponding use of the JALR instruction in TinyRV2.
 
