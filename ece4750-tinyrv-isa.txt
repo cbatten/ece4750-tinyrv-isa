@@ -536,7 +536,7 @@ when performing the shift.
 
   31        25 24     20 19     15 14  12 11      7 6           0
  +------------+---------+---------+------+---------+-------------+
- | 0000000    | imm     | rs1     | 001  | imm'    | 0010011     |
+ | 0100000    | imm     | rs1     | 101  | rd      | 0010011     |
  +------------+---------+---------+------+---------+-------------+
 
 Note that the hardware should ensure that the sign-bit of R[rs1] is
@@ -551,7 +551,7 @@ extended to the right as it does the right shift.
 
   31        25 24     20 19     15 14  12 11      7 6           0
  +------------+---------+---------+------+---------+-------------+
- | 0000000    | imm     | rs1     | 101  | imm'    | 0010011     |
+ | 0000000    | imm     | rs1     | 101  | rd      | 0010011     |
  +------------+---------+---------+------+---------+-------------+
 
 Note that the hardware should append zeros to the left as it does the
@@ -566,7 +566,7 @@ right shift.
 
   31        25 24     20 19     15 14  12 11      7 6           0
  +------------+---------+---------+------+---------+-------------+
- | 0100000    | imm     | rs1     | 101  | imm'    | 0010011     |
+ | 0000000    | imm     | rs1     | 001  | rd      | 0010011     |
  +------------+---------+---------+------+---------+-------------+
 
 Note that the hardware should append zeros to the right as it does the
@@ -644,7 +644,7 @@ left shift.
 
  - Summary   : Jump to address
  - Assembly  : jr rs1
- - Semantics : PC = R[rs1] + sext(imm)
+ - Semantics : PC = R[rs1]
  - Format    : I-Type, I-immediate
 
   31                  20 19     15 14  12 11      7 6           0
